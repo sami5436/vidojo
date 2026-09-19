@@ -794,6 +794,22 @@ function insertKey(state: EditorState, key: string): EditorState {
     return state;
   }
 
+  // Arrow keys move without leaving insert mode, the way a real vim does.
+  if (key === "ArrowLeft") {
+    state.cursor.col = Math.max(0, col - 1);
+    return state;
+  }
+  if (key === "ArrowRight") {
+    state.cursor.col = Math.min(text.length, col + 1);
+    return state;
+  }
+  if (key === "ArrowUp" || key === "ArrowDown") {
+    const target = key === "ArrowUp" ? lineIndex - 1 : lineIndex + 1;
+    if (target < 0 || target >= state.lines.length) return state;
+    state.cursor = { line: target, col: Math.min(col, lineAt(state, target).length) };
+    return state;
+  }
+
   state.dirty = true;
 
   if (key === CR) {
@@ -853,6 +869,10 @@ function commandKey(state: EditorState, key: string): EditorState {
     state.mode = state.visualStart ? "visual" : "normal";
     state.cmdline = "";
     state.cmdPrefix = null;
+    return state;
+  }
+
+  if (key === "ArrowLeft" || key === "ArrowRight" || key === "ArrowUp" || key === "ArrowDown") {
     return state;
   }
 
@@ -1015,7 +1035,14 @@ function normalKey(state: EditorState, key: string, replaying: boolean): EditorS
     return ctrlKey(state, key);
   }
 
-  let resolved = key;
+  const ARROWS: Record<string, string> = {
+    ArrowLeft: "h",
+    ArrowDown: "j",
+    ArrowUp: "k",
+    ArrowRight: "l",
+  };
+
+  let resolved = ARROWS[key] ?? key;
   if (key === "Backspace") resolved = "h";
   else if (key === CR) resolved = "j";
   if (resolved.length !== 1) return state;
