@@ -1,25 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 export type Theme = "dark" | "light";
 
 const KEY = "vidojo:theme";
 
 /**
- * The theme is written to <html data-theme> by an inline script in the layout,
- * so the first paint is already correct. This hook only mirrors and flips it.
+ * The theme lives on <html data-theme>, written by an inline script before the
+ * first paint. React just subscribes to it, so nothing ever flashes.
  */
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): Theme {
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
+}
+
+function getServerSnapshot(): Theme {
+  return "dark";
+}
+
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    setTheme(current === "light" ? "light" : "dark");
-  }, []);
-
-  const apply = useCallback((next: Theme) => {
-    setTheme(next);
+  const setTheme = useCallback((next: Theme) => {
     document.documentElement.setAttribute("data-theme", next);
     document.documentElement.style.colorScheme = next;
     try {
@@ -27,11 +40,12 @@ export function useTheme() {
     } catch {
       // private browsing can refuse storage, the theme still applies for now
     }
+    for (const listener of listeners) listener();
   }, []);
 
   const toggle = useCallback(() => {
-    apply(theme === "dark" ? "light" : "dark");
-  }, [apply, theme]);
+    setTheme(getSnapshot() === "dark" ? "light" : "dark");
+  }, [setTheme]);
 
-  return { theme, setTheme: apply, toggle };
+  return { theme, setTheme, toggle };
 }
