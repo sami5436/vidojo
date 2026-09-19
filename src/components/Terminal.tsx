@@ -100,11 +100,15 @@ export default function Terminal({ session }: Props) {
       <textarea
         ref={capture}
         aria-label="Terminal input"
-        className="pointer-events-none absolute top-0 left-0 h-px w-px resize-none border-0 bg-transparent p-0 text-transparent opacity-0 outline-none"
+        // Kept invisible rather than hidden, because iOS will not raise the
+        // keyboard for an element with zero opacity or display none.
+        className="pointer-events-none absolute top-0 left-0 h-px w-px resize-none border-0 bg-transparent p-0 text-transparent caret-transparent outline-none"
         autoCapitalize="none"
         autoCorrect="off"
         autoComplete="off"
         spellCheck={false}
+        inputMode="text"
+        enterKeyHint="enter"
         onKeyDown={onKeyDown}
         onInput={onInput}
         onFocus={() => setFocused(true)}

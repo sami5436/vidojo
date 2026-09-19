@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import KeyBar from "@/components/KeyBar";
+import KeySheet from "@/components/KeySheet";
 import LessonPanel from "@/components/LessonPanel";
 import Terminal from "@/components/Terminal";
 import TopBar, { type AppMode } from "@/components/TopBar";
@@ -15,6 +16,7 @@ import type { Probe } from "@/lib/lessons/types";
 export default function Vidojo() {
   const { theme, toggle } = useTheme();
   const [mode, setMode] = useState<AppMode>("learn");
+  const [sheetOpen, setSheetOpen] = useState(false);
   const device = useDevice();
   useViewportHeight();
 
@@ -54,6 +56,15 @@ export default function Vidojo() {
         onModeChange={onModeChange}
         theme={theme}
         onThemeToggle={toggle}
+        right={
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            className="h-7 shrink-0 rounded-md border border-edge bg-sunken px-2 text-[12px] text-dim transition-colors hover:text-accent"
+          >
+            keys
+          </button>
+        }
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -66,6 +77,8 @@ export default function Vidojo() {
         )}
         <Terminal session={session} />
       </div>
+
+      {sheetOpen && <KeySheet onClose={() => setSheetOpen(false)} />}
 
       {device.isMobile && (
         <KeyBar
