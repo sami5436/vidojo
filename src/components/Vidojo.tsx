@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import KeyBar from "@/components/KeyBar";
 import LessonPanel from "@/components/LessonPanel";
 import Terminal from "@/components/Terminal";
 import TopBar, { type AppMode } from "@/components/TopBar";
@@ -8,16 +9,17 @@ import { useDevice } from "@/hooks/useDevice";
 import { useLessons } from "@/hooks/useLessons";
 import { useSession } from "@/hooks/useSession";
 import { useTheme } from "@/hooks/useTheme";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
 import type { Probe } from "@/lib/lessons/types";
 
 export default function Vidojo() {
   const { theme, toggle } = useTheme();
   const [mode, setMode] = useState<AppMode>("learn");
   const device = useDevice();
+  useViewportHeight();
 
-  // The lessons hook needs the session to load files, the session needs the
-  // lessons hook to receive probes, so the callback is passed through a ref
-  // free indirection: a stable wrapper that reads the latest observer.
+  // The lessons hook needs the session to load files and the session needs the
+  // lessons hook to receive probes. A tiny state holder breaks the cycle.
   const [observer, setObserver] = useState<{ run: (probe: Probe) => void }>({
     run: () => {},
   });
@@ -43,7 +45,10 @@ export default function Vidojo() {
     session.editor?.path === lessons.lesson.file.path;
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col bg-bg">
+    <div
+      className="flex w-full flex-col bg-bg"
+      style={{ height: "var(--app-height, 100dvh)" }}
+    >
       <TopBar
         mode={mode}
         onModeChange={onModeChange}
@@ -61,6 +66,14 @@ export default function Vidojo() {
         )}
         <Terminal session={session} />
       </div>
+
+      {device.isMobile && (
+        <KeyBar
+          onKey={session.sendKey}
+          screen={session.screen}
+          mode={session.editor?.mode ?? null}
+        />
+      )}
     </div>
   );
 }
