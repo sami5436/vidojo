@@ -264,9 +264,12 @@ const grep: Handler = (cmd, env) => {
 };
 
 const find: Handler = (cmd, env) => {
-  const start = cmd.args[0] ?? ".";
-  const nameIndex = cmd.args.indexOf("-name");
-  const pattern = nameIndex >= 0 ? cmd.args[nameIndex + 1] : null;
+  // -name is a predicate, not a flag, so find reads the raw token list.
+  const nameIndex = cmd.tokens.indexOf("-name");
+  const pattern = nameIndex >= 0 ? (cmd.tokens[nameIndex + 1] ?? null) : null;
+  const start = cmd.tokens.find((token) => !token.startsWith("-")) === pattern
+    ? "."
+    : (cmd.tokens.find((token) => !token.startsWith("-")) ?? ".");
   const matcher = pattern
     ? new RegExp(`^${pattern.replace(/[.+^$()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`)
     : null;
