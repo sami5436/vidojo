@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Terminal from "@/components/Terminal";
 import TopBar, { type AppMode } from "@/components/TopBar";
-import { useDevice } from "@/hooks/useDevice";
+import { useSession } from "@/hooks/useSession";
 import { useTheme } from "@/hooks/useTheme";
 
 export default function Vidojo() {
   const { theme, toggle } = useTheme();
   const [mode, setMode] = useState<AppMode>("learn");
-  const device = useDevice();
+  const session = useSession();
 
   return (
     <div className="flex h-[100dvh] w-full flex-col bg-bg">
@@ -18,15 +19,7 @@ export default function Vidojo() {
         theme={theme}
         onThemeToggle={toggle}
       />
-      <main className="flex min-h-0 flex-1 items-center justify-center p-6 text-[13px] text-dim">
-        <div className="flex flex-col gap-1">
-          <span className="text-accent">vidojo boot</span>
-          <span>mode: {mode}</span>
-          <span>
-            input: {device.ready ? (device.isMobile ? "key bar" : "keyboard") : "..."}
-          </span>
-        </div>
-      </main>
+      <Terminal session={session} />
     </div>
   );
 }
