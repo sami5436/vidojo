@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 
 export type Device = {
-  /** true once we have actually measured the client, false during SSR */
+  /** false during the server render, true once the client has measured */
   ready: boolean;
   isTouch: boolean;
+  /** narrower than the breakpoint where the lesson panel sits beside the terminal */
   isNarrow: boolean;
-  /** touch plus a narrow viewport means we drive the on screen key bar */
+  /** a phone or tablet, where the on screen key bar earns its space */
   isMobile: boolean;
 };
 
-const NARROW = 820;
+/** Matches the lg breakpoint the layout uses to put the panel on the side. */
+const NARROW = 1023;
 
 export function useDevice(): Device {
   const [device, setDevice] = useState<Device>({
@@ -23,25 +25,28 @@ export function useDevice(): Device {
 
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
+    const noHover = window.matchMedia("(hover: none)");
     const narrow = window.matchMedia(`(max-width: ${NARROW}px)`);
 
     const read = () => {
       const isTouch = coarse.matches || navigator.maxTouchPoints > 0;
-      const isNarrow = narrow.matches;
       setDevice({
         ready: true,
         isTouch,
-        isNarrow,
-        isMobile: isTouch && isNarrow,
+        isNarrow: narrow.matches,
+        // A touch laptop still has a real keyboard, so hover is the tiebreak.
+        isMobile: isTouch && noHover.matches,
       });
     };
 
     read();
-    coarse.addEventListener("change", read);
-    narrow.addEventListener("change", read);
+    for (const query of [coarse, noHover, narrow]) {
+      query.addEventListener("change", read);
+    }
     return () => {
-      coarse.removeEventListener("change", read);
-      narrow.removeEventListener("change", read);
+      for (const query of [coarse, noHover, narrow]) {
+        query.removeEventListener("change", read);
+      }
     };
   }, []);
 
