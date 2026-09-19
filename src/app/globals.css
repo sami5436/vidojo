@@ -1,26 +1,144 @@
 @import "tailwindcss";
 
+/* vidojo theme tokens. dark is the default, light is opt in via data-theme */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0c0e;
+  --bg-raised: #111418;
+  --bg-sunken: #06080a;
+  --border: #20262d;
+  --border-soft: #171c22;
+  --fg: #d5dbe2;
+  --fg-dim: #7b8794;
+  --fg-faint: #49535e;
+  --accent: #5ccfa0;
+  --accent-soft: #1d3b31;
+  --cursor: #5ccfa0;
+  --warn: #e0b562;
+  --err: #e8736b;
+  --info: #6fb6e8;
+  --sel: #2a3f52;
+  --tilde: #2b333c;
+  --kw: #c98bdb;
+  --type: #6fb6e8;
+  --str: #b8d178;
+  --num: #e0b562;
+  --com: #4e5a66;
+  --fn: #66cfc5;
+  --pre: #e8736b;
+}
+
+:root[data-theme="light"] {
+  --bg: #faf9f6;
+  --bg-raised: #f2f0ea;
+  --bg-sunken: #eceae3;
+  --border: #d9d5ca;
+  --border-soft: #e6e3da;
+  --fg: #2c2f33;
+  --fg-dim: #6b7079;
+  --fg-faint: #9aa0a8;
+  --accent: #10795a;
+  --accent-soft: #d6ede3;
+  --cursor: #10795a;
+  --warn: #9a6b0f;
+  --err: #b8342c;
+  --info: #1f6296;
+  --sel: #cfe0ee;
+  --tilde: #c3c0b6;
+  --kw: #8a3fa3;
+  --type: #1f6296;
+  --str: #4f7314;
+  --num: #9a6b0f;
+  --com: #9aa0a8;
+  --fn: #0f7a72;
+  --pre: #b8342c;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-raised: var(--bg-raised);
+  --color-sunken: var(--bg-sunken);
+  --color-edge: var(--border);
+  --color-edge-soft: var(--border-soft);
+  --color-fg: var(--fg);
+  --color-dim: var(--fg-dim);
+  --color-faint: var(--fg-faint);
+  --color-accent: var(--accent);
+  --color-accentsoft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+  --color-info: var(--info);
+  --color-sel: var(--sel);
+  --color-tilde: var(--tilde);
+  --font-mono: var(--font-terminal), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-terminal), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* the app owns its own scrolling, the page itself never scrolls sideways */
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--sel);
+  color: var(--fg);
+}
+
+/* a terminal scrollbar should be present but quiet */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-faint);
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.cursor-blink {
+  animation: blink 1.1s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink {
+    animation: none;
+  }
 }
