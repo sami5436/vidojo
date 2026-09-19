@@ -2,6 +2,8 @@ export type ParsedCommand = {
   name: string;
   args: string[];
   flags: Set<string>;
+  /** every token after the command name, flags included, for find and friends */
+  tokens: string[];
   /** everything after the command name, untouched, for echo and friends */
   rest: string;
 };
@@ -68,5 +70,5 @@ export function parse(input: string): ParsedCommand | null {
   }
 
   const restStart = trimmed.indexOf(name) + name.length;
-  return { name, args, flags, rest: trimmed.slice(restStart).trim() };
+  return { name, args, flags, tokens: raw, rest: trimmed.slice(restStart).trim() };
 }
